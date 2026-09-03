@@ -5,7 +5,7 @@
   "author": "Tab5 OS Team",
   "description": "Terminal interativo e console de comandos do Tab5 OS.",
   "entry": "app.wasm",
-  "icon_symbol": "LV_SYMBOL_SETTINGS",
+  "icon_symbol": "LV_SYMBOL_NEW_LINE",
   "icon_bg_color": "#1E293B",
   "file_associations": [
     ".sh",
