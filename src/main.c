@@ -27,36 +27,10 @@ static void append_terminal_line(const char *line)
     }
 }
 
-static void on_clear_terminal(void *user_data)
-{
-    (void)user_data;
-    s_terminal_history[0] = '\0';
-    append_terminal_line("Tab5 OS Micro-Shell [v1.0.0]");
-    append_terminal_line("Digite 'help' para ver os comandos disponiveis.");
-    append_terminal_line("-------------------------------------------");
-    tab5_sound_play_beep(1000, 20);
-    tab5_ui_show_toast("Terminal limpo", 1200);
-}
-
-static void on_exec_help(void *user_data)
-{
-    (void)user_data;
-    append_terminal_line("> help");
-    append_terminal_line("Comandos integrados:");
-    append_terminal_line("  help      - Exibe esta mensagem de ajuda");
-    append_terminal_line("  sysinfo   - Exibe status de memoria e bateria");
-    append_terminal_line("  wifi      - Exibe status da conexao de rede");
-    append_terminal_line("  storage   - Lista caminhos de armazenamento");
-    append_terminal_line("  clear     - Limpa o buffer da tela");
-    tab5_sound_play_beep(1200, 25);
-}
-
 static void app_init(void)
 {
     tab5_system_log(2, "tab5_terminal", "Aplicativo Terminal iniciado");
     tab5_ui_app_bar_set_title("Terminal");
-    tab5_ui_app_bar_add_action_button("LV_SYMBOL_TRASH", on_clear_terminal, NULL);
-    tab5_ui_app_bar_add_action_button("LV_SYMBOL_LIST", on_exec_help, NULL);
 
     s_terminal_history[0] = '\0';
     append_terminal_line("===========================================");
