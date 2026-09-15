@@ -16,20 +16,25 @@ static tab5_ui_obj_t s_ta = TAB5_UI_INVALID_OBJ;
 static bool s_is_processing_cmd = false;
 static char s_current_cwd[64] = "/sdcard";
 
-static void execute_current_command(void)
+static void execute_command(const char *command)
 {
     if (s_ta == TAB5_UI_INVALID_OBJ || s_is_processing_cmd) {
         return;
     }
 
-    const char *full_text = tab5_ui_textarea_get_text(s_ta);
-    if (full_text == NULL) {
-        return;
-    }
-
-    size_t full_len = strlen(full_text);
     char input_line[256] = {0};
-    if (full_len >= s_prompt_min_index) {
+    if (command != NULL) {
+        strncpy(input_line, command, sizeof(input_line) - 1);
+    } else {
+        char full_text[sizeof(s_term_history)];
+        int32_t full_len_result = tab5_ui_textarea_copy_text(s_ta, full_text, sizeof(full_text));
+        if (full_len_result < 0) {
+            return;
+        }
+        size_t full_len = (size_t)full_len_result;
+        if (full_len < s_prompt_min_index) {
+            return;
+        }
         strncpy(input_line, full_text + s_prompt_min_index, sizeof(input_line) - 1);
     }
 
@@ -142,14 +147,18 @@ TAB5_APP_EXPORT void tab5_app_on_ui_event(tab5_ui_obj_t obj,
         if (s_is_processing_cmd) {
             return;
         }
-        const char *txt = tab5_ui_textarea_get_text(s_ta);
-        if (txt == NULL) {
+        char txt[sizeof(s_term_history)];
+        int32_t txt_len_result = tab5_ui_textarea_copy_text(s_ta, txt, sizeof(txt));
+        if (txt_len_result < 0) {
             return;
         }
 
-        size_t cur_len = strlen(txt);
+        size_t cur_len = (size_t)txt_len_result;
+        char last_char = cur_len > 0 ? txt[cur_len - 1] : '\0';
+        bool prompt_ok = cur_len >= s_prompt_min_index &&
+                         strncmp(txt, s_term_history, s_prompt_min_index) == 0;
         /* Protege histórico e prompt contra exclusão indevida */
-        if (cur_len < s_prompt_min_index || strncmp(txt, s_term_history, s_prompt_min_index) != 0) {
+        if (!prompt_ok) {
             s_is_processing_cmd = true;
             tab5_ui_textarea_set_text(s_ta, s_term_history);
             tab5_ui_textarea_set_cursor_pos(s_ta, TAB5_UI_CURSOR_LAST);
@@ -158,9 +167,11 @@ TAB5_APP_EXPORT void tab5_app_on_ui_event(tab5_ui_obj_t obj,
         }
 
         /* Se o usuário digitou Enter ('\n') */
-        if (cur_len > 0 && txt[cur_len - 1] == '\n') {
-            execute_current_command();
+        if (cur_len > 0 && last_char == '\n') {
+            execute_command(NULL);
         }
+    } else if (event_type == TAB5_UI_EVENT_READY) {
+        execute_command(NULL);
     }
 }
 

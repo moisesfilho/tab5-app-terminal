@@ -13,12 +13,28 @@ mkdir -p "${DIST_DIR}"
 
 if [ -x "${WASI_CLANG}" ] && [ -f "${APP_DIR}/src/main.c" ]; then
     echo "[INFO] Compilando WebAssembly com wasi-sdk clang..."
+    WRAPPER="$(mktemp "${TMPDIR:-/tmp}/tab5-terminal-entrypoint.XXXXXX.c")"
+    cleanup_wrapper() {
+        rm -f "${WRAPPER}"
+    }
+    trap cleanup_wrapper EXIT
+    cat >"${WRAPPER}" <<'EOF'
+#include "tab5_sdk.h"
+
+extern int main(int, char **);
+
+TAB5_APP_ENTRYPOINT_EXPORT int tab5_wasm_app_main(void)
+{
+    return main(0, NULL);
+}
+EOF
     "${WASI_CLANG}" -O2 -I"${SDK_DIR}/include" \
-        -Wl,--export=main -Wl,--export=app_main -Wl,--allow-undefined \
-        -o "${APP_DIR}/app.wasm" "${APP_DIR}/src/main.c"
-elif [ ! -f "${APP_DIR}/app.wasm" ]; then
-    echo "[WARN] wasi-sdk nao encontrado, gerando dummy wasm..."
-    printf '\x00\x61\x73\x6d\x01\x00\x00\x00' > "${APP_DIR}/app.wasm"
+        -Wl,--export=main -Wl,--export=tab5_app_on_ui_event -Wl,--export=on_ui_event \
+        -Wl,--export=tab5_app_on_theme_changed -Wl,--export=on_theme_changed \
+        -Wl,--export=tab5_app_on_open_file -Wl,--export=on_open_file -Wl,--allow-undefined \
+        -o "${APP_DIR}/app.wasm" "${APP_DIR}/src/main.c" "${WRAPPER}"
+else
+    echo "[WARN] wasi-sdk nao encontrado; mantendo app.wasm existente"
 fi
 
 echo "[INFO] Empacotando com Tab5 Pack Tool..."

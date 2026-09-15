@@ -10,3 +10,6 @@ chmod +x tools/build.sh
 ```
 
 O pacote `.tab5pkg` será gerado em `dist/com.tab5.terminal.tab5pkg`.
+
+O terminal oferece os comandos `help`, `ls`, `free`, `df`, `date` e `clear`
+por meio da entrada de comandos no textarea e da confirmação com Enter.
