@@ -37,7 +37,7 @@ import time
 import unittest
 from pathlib import Path
 
-OS_TESTS = Path(__file__).resolve().parents[2] / "tab5-os" / "tests"
+OS_TESTS = Path(__file__).resolve().parents[3] / "tab5-os" / "tests" / "device"
 sys.path.insert(0, str(OS_TESTS))
 
 from test_serial_bridge_device_validation import (  # noqa: E402

@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
+# Device tests require explicit user authorization; do not invoke --device
+# automatically from agents or generic test/build runners.
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 OS_ROOT="$(cd "${SCRIPT_DIR}/../../tab5-os" && pwd)"
@@ -19,5 +21,5 @@ python3 -m pytest -q \
     "${SCRIPT_DIR}/test_terminal_manifest_package_contract.py"
 
 if [ "${RUN_DEVICE}" -eq 1 ]; then
-    python3 "${SCRIPT_DIR}/test_terminal_device_help_enter.py"
+    python3 "${SCRIPT_DIR}/device/test_terminal_device_help_enter.py"
 fi
